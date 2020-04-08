@@ -3,7 +3,9 @@ package database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Vector;
 
 public class MemberDAO {
 	//드라이버 클래스 로드
@@ -30,25 +32,27 @@ public class MemberDAO {
 	}
 	
 	//데이터 베이스 요청 작업
-	public int insert(int no, String name, int age, String gender) {
-		int result = 0;
+	public Vector<MemberVO> getList(){
+		Vector<MemberVO> vecList = new Vector<MemberVO>();
 		
-		String sql = "insert into memberTBL(no,name,age,gender) values(?,?,?)";
+		String sql = "select * from memberTBL";
+		
 		try (Connection con = getConnection();
-			PreparedStatement pstmt = con.prepareStatement(sql)){
+			 PreparedStatement pstmt = con.prepareStatement(sql);
+			 ResultSet rs = pstmt.executeQuery()){
 			
-			pstmt.setInt(1, no);	
-			pstmt.setString(2, name);	
-			pstmt.setInt(3, age);
-			pstmt.setString(4, gender);
-			
-			
-			result = pstmt.executeUpdate();
+			while(rs.next()) {
+				MemberVO vo = new MemberVO();
+				vo.setNo(rs.getInt(1));
+				vo.setName(rs.getString(2));
+				vo.setAge(rs.getInt(3));
+				vo.setGender(rs.getString(4));
+				vecList.add(vo);
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return result;
+		return vecList;
 	}
-	
 }
