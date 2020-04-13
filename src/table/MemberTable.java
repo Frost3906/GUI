@@ -13,9 +13,12 @@ import database.MemberVO;
 
 import javax.swing.JTabbedPane;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JTable;
@@ -24,22 +27,23 @@ import javax.swing.JScrollPane;
 
 
 
-public class MemberTable extends JFrame {
+public class MemberTable extends JFrame implements ActionListener{
 
 	private JPanel contentPane;
 	private JTextField txt_name;
 	private JTextField txt_age;
 	private JTextField txt_gender;
-	private JTextField textField;
-	private JTable table;
+	private JTextField textField_show;
+	private JTable table_show;
 	private JTextField textField_1;
 	private JTextField textField_2;
 	private JTextField textField_3;
-	private JTextField textField_4;
+	private JTextField txt_del;
 	private JTable table_1;
+	private JButton btn_refresh, btn_show, btn_del ;
 
 	private MemberDAO dao;
-	private DefaultTableModel model;
+	private DefaultTableModel model, model_show;
 	/**
 	 * Launch the application.
 	 */
@@ -110,16 +114,20 @@ public class MemberTable extends JFrame {
 		JLabel lblNewLabel_3 = new JLabel("회원번호");
 		panel_4.add(lblNewLabel_3);
 		
-		textField = new JTextField();
-		panel_4.add(textField);
-		textField.setColumns(10);
+		textField_show = new JTextField();
+		panel_4.add(textField_show);
+		textField_show.setColumns(10);
 		
-		JButton btnNewButton = new JButton("조회");
-		panel_4.add(btnNewButton);
+		btn_show = new JButton("조회");
+		btn_show.addActionListener(this);
+		panel_4.add(btn_show);
 		
-		table = new JTable();
-		panel_1.add(table, BorderLayout.CENTER);
-		
+		model_show = getModel();
+		table_show = new JTable(model_show);
+		JScrollPane scrollPane1 = new JScrollPane();
+		scrollPane1.setViewportView(table_show);
+		panel_1.add(scrollPane1,BorderLayout.CENTER);
+				
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("회원수정", null, panel_2, null);
 		panel_2.setLayout(new BorderLayout(0, 0));
@@ -156,12 +164,13 @@ public class MemberTable extends JFrame {
 		JLabel lblNewLabel_6 = new JLabel("회원번호");
 		panel_3.add(lblNewLabel_6);
 		
-		textField_4 = new JTextField();
-		panel_3.add(textField_4);
-		textField_4.setColumns(10);
+		txt_del = new JTextField();
+		panel_3.add(txt_del);
+		txt_del.setColumns(10);
 		
-		JButton btnNewButton_2 = new JButton("삭제");
-		panel_3.add(btnNewButton_2);
+		btn_del = new JButton("삭제");
+		btn_del.addActionListener(this);
+		panel_3.add(btn_del);
 		
 		JPanel panel_6 = new JPanel();
 		tabbedPane.addTab("회원전체조회", null, panel_6, null);
@@ -170,8 +179,23 @@ public class MemberTable extends JFrame {
 		JScrollPane scrollPane = new JScrollPane();
 		panel_6.add(scrollPane, BorderLayout.CENTER);
 		
+		txt_gender.addActionListener(this);
 		
 		//memberTBL의 전체 내용 가져오기
+		
+		
+		
+		table_1 = new JTable(getModel());
+		list();
+		scrollPane.setViewportView(table_1);
+		
+		btn_refresh = new JButton("새로고침");
+		btn_refresh.addActionListener(this);
+		panel_6.add(btn_refresh, BorderLayout.NORTH);
+	}
+	
+	
+	public DefaultTableModel getModel() {
 		String columnNames[] = { "번호","이름","나이","성별"};
 		model = new DefaultTableModel(columnNames,0) {
 			@Override
@@ -179,11 +203,7 @@ public class MemberTable extends JFrame {
 				return false;
 			}
 		};
-		
-		
-		table_1 = new JTable(model);
-		list();
-		scrollPane.setViewportView(table_1);
+		return model;
 	}
 	
 	public void list() {
@@ -194,6 +214,64 @@ public class MemberTable extends JFrame {
 			Object[] objList = {vo.getNo(),vo.getName(),vo.getAge(),vo.getGender()};
 			model.addRow(objList);
 		}
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String name,gender;
+		int age,num;
+		
+		
+		if(e.getSource()==btn_show) {
+			
+			//사용자가 입력한 번호 가져오기
+			num = Integer.parseInt(textField_show.getText());
+			
+			//번호에 해당하는 정보 가져오고 보여주기
+			
+			MemberVO vo = dao.getRow(num);
+			Object[] obj = {vo.getNo(),vo.getName(),vo.getAge(),vo.getGender()};
+			model_show.addRow(obj);
+		}
+		
+		
+		
+		if(e.getSource()==txt_gender) {
+			//이름과 나이와 성별을 가져온 후
+			MemberVO vo = new MemberVO();
+			name = txt_name.getText();
+			age = Integer.parseInt(txt_age.getText());
+			gender = txt_gender.getText();
+			vo.setName(name);
+			vo.setAge(age);
+			vo.setGender(gender);
+			
+			
+			
+			//db에 입력하기
+			int result = dao.insert(vo);
+			
+			if(result>0) {
+				JOptionPane.showMessageDialog(this, "성공");
+				model.setNumRows(0);
+				list();
+			}else {
+				JOptionPane.showMessageDialog(this, "실패");
+			}
+			
+			
+		}else if(e.getSource()==btn_refresh) {
+			model.setNumRows(0);
+			list();
+		}else if(e.getSource()==btn_del) {
+			num = Integer.parseInt(txt_del.getText());
+			dao.remove(num);
+			model.setNumRows(0);
+			list();
+			txt_del.setText("");
+		}
+		
 		
 	}
 }
