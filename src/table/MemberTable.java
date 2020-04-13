@@ -266,10 +266,20 @@ public class MemberTable extends JFrame implements ActionListener{
 			list();
 		}else if(e.getSource()==btn_del) {
 			num = Integer.parseInt(txt_del.getText());
-			dao.remove(num);
-			model.setNumRows(0);
-			list();
-			txt_del.setText("");
+			int result = dao.remove(num);
+			if(result > 0) {
+				JOptionPane.showMessageDialog(this, "삭제성공");
+				model.setNumRows(0);
+				list();
+				txt_del.setText("");
+				
+			}else {
+				JOptionPane.showMessageDialog(this, "삭제실패");
+			}
+		}else if(e.getActionCommand().equals("수정")) {
+			//
+		}else if(e.getActionCommand().equals("조회2")) {
+			
 		}
 		
 		
