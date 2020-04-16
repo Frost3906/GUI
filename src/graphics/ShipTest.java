@@ -20,15 +20,16 @@ import javax.swing.border.EmptyBorder;
 
 class Ship extends JPanel implements ActionListener{
 
-	private BufferedImage img;
+	private BufferedImage img, img2;
 	private Timer timer;
 	private int posX, posY;
 	
 	public Ship() {
-		setBackground(Color.BLACK);
 		URL url = getClass().getResource("ship.jpg");
+		URL url2 = getClass().getResource("hubble.jpg");
 		try {
 			img = ImageIO.read(new File(url.getFile()));
+			img2 = ImageIO.read(new File(url2.getFile()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -44,6 +45,7 @@ class Ship extends JPanel implements ActionListener{
 	protected void paintComponent(Graphics g) {
 		
 		super.paintComponent(g);
+		g.drawImage(img2, 0, 0, null);
 		g.drawImage(img, posX, posY, null);
 	
 	}
